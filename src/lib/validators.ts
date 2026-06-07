@@ -1,14 +1,19 @@
 import { z } from "zod";
 
+const phoneSchema = z
+  .string()
+  .trim()
+  .regex(/^(\+?86)?1[3-9]\d{9}$/, "请输入有效的中国大陆手机号");
+
 export const registerSchema = z.object({
   role: z.enum(["client", "freelancer"]),
   name: z.string().min(2),
-  email: z.string().email(),
+  phone: phoneSchema,
   password: z.string().min(8)
 });
 
 export const loginSchema = z.object({
-  email: z.string().email(),
+  phone: phoneSchema.or(z.string().email()),
   password: z.string().min(1)
 });
 

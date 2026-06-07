@@ -6,17 +6,18 @@ import { registerSchema } from "@/lib/validators";
 export async function POST(request: Request) {
   try {
     const input = registerSchema.parse(await request.json());
-    const exists = await prisma.user.findUnique({ where: { email: input.email } });
+    const exists = await prisma.user.findUnique({ where: { phone: input.phone } });
 
     if (exists) {
-      return fail("该邮箱已注册", 409);
+      return fail("该手机号已注册", 409);
     }
 
     const user = await prisma.user.create({
       data: {
         role: input.role,
         name: input.name,
-        email: input.email,
+        email: `phone-${input.phone}@users.spacex1.cn`,
+        phone: input.phone,
         passwordHash: await hashPassword(input.password),
         freelancerProfile:
           input.role === "freelancer"
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
               }
             : undefined
       },
-      select: { id: true, role: true, name: true, email: true, status: true }
+      select: { id: true, role: true, name: true, phone: true, status: true }
     });
 
     await setSessionCookie(await createSession(user.id));

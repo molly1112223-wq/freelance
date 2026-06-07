@@ -64,6 +64,7 @@ model User {
   role                  UserRole
   name                  String
   email                 String             @unique
+  phone                 String?            @unique
   passwordHash          String
   avatarUrl             String?
   status                UserStatus         @default(active)

@@ -6,14 +6,16 @@ import { loginSchema } from "@/lib/validators";
 export async function POST(request: Request) {
   try {
     const input = loginSchema.parse(await request.json());
-    const user = await prisma.user.findUnique({ where: { email: input.email } });
+    const user = await prisma.user.findFirst({
+      where: input.phone.includes("@") ? { email: input.phone } : { phone: input.phone }
+    });
 
     if (!user || !(await verifyPassword(input.password, user.passwordHash))) {
-      return fail("邮箱或密码错误", 401);
+      return fail("手机号或密码错误", 401);
     }
 
     await setSessionCookie(await createSession(user.id));
-    return ok({ id: user.id, role: user.role, name: user.name, email: user.email, status: user.status });
+    return ok({ id: user.id, role: user.role, name: user.name, phone: user.phone, status: user.status });
   } catch (error) {
     return handleApiError(error);
   }

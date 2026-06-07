@@ -12,7 +12,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
   const router = useRouter();
   const [role, setRole] = useState("client");
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +22,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
     setMessage("");
     setIsLoading(true);
 
-    const payload = mode === "login" ? { email, password } : { role, name, email, password };
+    const payload = mode === "login" ? { phone, password } : { role, name, phone, password };
     const response = await fetch(`/api/auth/${mode}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -56,7 +56,17 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
           <Input name="name" onChange={(event) => setName(event.target.value)} placeholder="姓名或公司名" required value={name} />
         </>
       ) : null}
-      <Input name="email" onChange={(event) => setEmail(event.target.value)} placeholder="邮箱" required type="email" value={email} />
+      <Input
+        autoComplete="tel"
+        inputMode="tel"
+        name="phone"
+        onChange={(event) => setPhone(event.target.value)}
+        pattern="(\\+?86)?1[3-9][0-9]{9}"
+        placeholder="手机号"
+        required
+        type="tel"
+        value={phone}
+      />
       <Input name="password" minLength={mode === "register" ? 8 : 1} onChange={(event) => setPassword(event.target.value)} placeholder="密码" required type="password" value={password} />
       {message ? <p className="text-sm text-[var(--muted)]">{message}</p> : null}
       <Button className="w-full" disabled={isLoading} type="submit">
