@@ -1,0 +1,195 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  client
+  freelancer
+  admin
+}
+
+enum UserStatus {
+  active
+  inactive
+  suspended
+}
+
+enum Availability {
+  available
+  busy
+  unavailable
+}
+
+enum ProjectStatus {
+  draft
+  published
+  inProgress
+  completed
+  cancelled
+}
+
+enum ProposalStatus {
+  submitted
+  accepted
+  rejected
+}
+
+enum ContractStatus {
+  active
+  submitted
+  approved
+  completed
+}
+
+enum DeliverableStatus {
+  submitted
+  approved
+}
+
+enum NotificationType {
+  proposalSubmitted
+  proposalAccepted
+  contractCreated
+  deliverableSubmitted
+  reviewReceived
+}
+
+model User {
+  id                    String             @id @default(cuid())
+  role                  UserRole
+  name                  String
+  email                 String             @unique
+  passwordHash          String
+  avatarUrl             String?
+  status                UserStatus         @default(active)
+  freelancerProfile     FreelancerProfile?
+  clientProjects        Project[]          @relation("ClientProjects")
+  freelancerProjects    Project[]          @relation("SelectedFreelancerProjects")
+  proposals             Proposal[]         @relation("FreelancerProposals")
+  clientContracts       Contract[]         @relation("ClientContracts")
+  freelancerContracts   Contract[]         @relation("FreelancerContracts")
+  deliverables          Deliverable[]
+  reviewsWritten        Review[]           @relation("ReviewsWritten")
+  reviewsReceived       Review[]           @relation("ReviewsReceived")
+  notifications         Notification[]
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+}
+
+model FreelancerProfile {
+  id                String       @id @default(cuid())
+  userId            String       @unique
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title             String
+  bio               String
+  skills            String[]
+  hourlyRate        Int?
+  portfolioUrls     String[]
+  ratingAvg         Float        @default(0)
+  completedProjects Int          @default(0)
+  availability      Availability @default(available)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+}
+
+model Project {
+  id                   String        @id @default(cuid())
+  clientId             String
+  client               User          @relation("ClientProjects", fields: [clientId], references: [id], onDelete: Cascade)
+  title                String
+  description          String
+  category             String
+  budgetMin            Int
+  budgetMax            Int
+  skillsRequired       String[]
+  imageUrls            String[]      @default([])
+  deadline             DateTime
+  status               ProjectStatus @default(published)
+  selectedProposalId   String?       @unique
+  selectedProposal     Proposal?     @relation("SelectedProposal", fields: [selectedProposalId], references: [id])
+  selectedFreelancerId String?
+  selectedFreelancer   User?         @relation("SelectedFreelancerProjects", fields: [selectedFreelancerId], references: [id])
+  proposals            Proposal[]    @relation("ProjectProposals")
+  contract             Contract?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+}
+
+model Proposal {
+  id             String         @id @default(cuid())
+  projectId      String
+  project        Project        @relation("ProjectProposals", fields: [projectId], references: [id], onDelete: Cascade)
+  freelancerId   String
+  freelancer     User           @relation("FreelancerProposals", fields: [freelancerId], references: [id], onDelete: Cascade)
+  selectedBy     Project?       @relation("SelectedProposal")
+  contract       Contract?
+  coverLetter    String
+  proposedAmount Int
+  estimatedDays  Int
+  status         ProposalStatus @default(submitted)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@unique([projectId, freelancerId])
+}
+
+model Contract {
+  id            String        @id @default(cuid())
+  projectId     String        @unique
+  project       Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  proposalId    String        @unique
+  proposal      Proposal      @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  clientId      String
+  client        User          @relation("ClientContracts", fields: [clientId], references: [id], onDelete: Cascade)
+  freelancerId  String
+  freelancer    User          @relation("FreelancerContracts", fields: [freelancerId], references: [id], onDelete: Cascade)
+  amount        Int
+  status        ContractStatus @default(active)
+  deliverables  Deliverable[]
+  reviews       Review[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Deliverable {
+  id           String            @id @default(cuid())
+  contractId   String
+  contract     Contract          @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  freelancerId String
+  freelancer   User              @relation(fields: [freelancerId], references: [id], onDelete: Cascade)
+  message      String
+  fileUrls     String[]
+  status       DeliverableStatus @default(submitted)
+  createdAt    DateTime          @default(now())
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  contractId  String
+  contract    Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  reviewerId  String
+  reviewer    User     @relation("ReviewsWritten", fields: [reviewerId], references: [id], onDelete: Cascade)
+  revieweeId  String
+  reviewee    User     @relation("ReviewsReceived", fields: [revieweeId], references: [id], onDelete: Cascade)
+  rating      Int
+  comment     String
+  createdAt   DateTime @default(now())
+
+  @@unique([contractId, reviewerId])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  body      String
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+}
