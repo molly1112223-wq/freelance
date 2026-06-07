@@ -16,6 +16,7 @@ export type Project = {
   budgetMin: number;
   budgetMax: number;
   skillsRequired: string[];
+  expectedDeliverables?: string[];
   imageUrls?: string[];
   deadline: string;
   status: string;
@@ -23,8 +24,8 @@ export type Project = {
   proposals: number;
 };
 
-export function ProjectSearch({ projects }: { projects: Project[] }) {
-  const [query, setQuery] = useState("");
+export function ProjectSearch({ initialQuery = "", projects }: { initialQuery?: string; projects: Project[] }) {
+  const [query, setQuery] = useState(initialQuery);
   const [activeCategory, setActiveCategory] = useState("全部");
   const categories = useMemo(() => ["全部", ...Array.from(new Set(projects.map((project) => project.category)))], [projects]);
   const normalizedQuery = query.trim().toLowerCase();
@@ -39,15 +40,15 @@ export function ProjectSearch({ projects }: { projects: Project[] }) {
       <div className="surface-slab p-6 md:p-8">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
-            <h1 className="text-4xl font-semibold">项目机会</h1>
-            <p className="mt-3 text-[var(--muted)]">搜索、筛选并投递设计项目。</p>
+            <h1 className="text-4xl font-semibold">需求广场</h1>
+            <p className="mt-3 text-[var(--muted)]">当前开放 {projects.length} 个需求，先浏览机会，再决定是否发布新需求。</p>
           </div>
-          <div className="flex gap-2">
+          <form className="flex gap-2" onSubmit={(event) => event.preventDefault()}>
             <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索项目、技能或行业" className="w-full md:w-72" />
             <button className="grid size-11 place-items-center rounded-lg bg-[var(--button-bg)] text-[var(--button-text)] transition-colors hover:bg-[var(--button-bg-hover)]" aria-label="搜索项目" type="button">
               <Search size={18} />
             </button>
-          </div>
+          </form>
         </div>
         <div className="mt-5 flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
           <div className="flex flex-wrap gap-2">
@@ -70,6 +71,11 @@ export function ProjectSearch({ projects }: { projects: Project[] }) {
             <SlidersHorizontal size={16} />
             已匹配 {filteredProjects.length} 个设计需求
           </div>
+        </div>
+        <div className="mt-5">
+          <a className="inline-flex h-10 items-center justify-center rounded border border-[var(--border)] px-4 text-sm text-[var(--foreground)] transition-colors hover:border-[var(--muted)] hover:bg-[var(--accent-3)]" href="#publish">
+            发布新的设计需求
+          </a>
         </div>
       </div>
 
@@ -102,6 +108,15 @@ export function ProjectSearch({ projects }: { projects: Project[] }) {
                     <Badge key={skill}>{skill}</Badge>
                   ))}
                 </div>
+                {project.expectedDeliverables?.length ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {project.expectedDeliverables.slice(0, 4).map((item) => (
+                      <span key={item} className="rounded-full border border-[var(--border)] px-2.5 py-1 text-xs text-[var(--muted)]">
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
               </div>
               <div className="border-t border-[color-mix(in_srgb,var(--ink)_10%,var(--border))] bg-[var(--card)] p-5 lg:border-l lg:border-t-0">
                 <p className="text-sm text-[var(--muted)]">预算</p>

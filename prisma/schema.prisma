@@ -108,6 +108,7 @@ model Project {
   budgetMin            Int
   budgetMax            Int
   skillsRequired       String[]
+  expectedDeliverables  String[]      @default([])
   imageUrls            String[]      @default([])
   deadline             DateTime
   status               ProjectStatus @default(published)

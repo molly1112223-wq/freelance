@@ -82,6 +82,16 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <Badge key={skill}>{skill}</Badge>
           ))}
         </div>
+        {project.expectedDeliverables?.length ? (
+          <Card className="mt-6">
+            <h2 className="text-xl font-semibold">预期交付物</h2>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {project.expectedDeliverables.map((item) => (
+                <Badge key={item}>{item}</Badge>
+              ))}
+            </div>
+          </Card>
+        ) : null}
         <Card className="mt-8">
           <h2 className="text-xl font-semibold">客户信息</h2>
           <p className="mt-3 text-sm text-[var(--muted)]">{project.client.name}</p>

@@ -108,6 +108,7 @@ model Project {
   budgetMin            Int
   budgetMax            Int
   skillsRequired       Json
+  expectedDeliverables  Json          @default("[]")
   imageUrls            Json          @default("[]")
   deadline             DateTime
   status               ProjectStatus @default(published)

@@ -4,6 +4,7 @@ import { Briefcase, CircleDollarSign, FileUp, Star, UploadCloud, type LucideIcon
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { FreelancerProfileEditor } from "@/components/freelancer-profile-editor";
 import { getCurrentUser } from "@/lib/auth";
 import { formatMoney } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
@@ -30,6 +31,8 @@ export default async function FreelancerDashboardPage() {
   const projects = dbProjects.map(toProject);
   const proposalAmount = proposals.reduce((total, proposal) => total + proposal.proposedAmount, 0);
   const profile = user.freelancerProfile;
+  const profileSkills = (Array.isArray(profile?.skills) ? profile.skills : []) as string[];
+  const portfolioUrls = (Array.isArray(profile?.portfolioUrls) ? profile.portfolioUrls : []) as string[];
   const deliverableTotal = proposals.filter((proposal) => proposal.project.contract?.freelancerId === user.id).length;
 
   return (
@@ -83,7 +86,7 @@ export default async function FreelancerDashboardPage() {
               {profile?.bio ?? "可承接数据看板、新手引导和设计系统项目。"}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
-              {((Array.isArray(profile?.skills) ? profile.skills : []) as string[]).slice(0, 5).concat(profile ? [] : ["Figma", "用户体验", "设计系统"]).map((skill) => (
+              {profileSkills.slice(0, 5).concat(profileSkills.length ? [] : ["Figma", "用户体验", "设计系统"]).map((skill) => (
                 <Badge key={skill}>{skill}</Badge>
               ))}
             </div>
@@ -96,6 +99,21 @@ export default async function FreelancerDashboardPage() {
                 <div className="h-full rounded-full bg-[var(--accent)]" style={{ width: "86%" }} />
               </div>
             </div>
+            </div>
+          </Card>
+          <Card>
+            <h2 className="text-xl font-semibold">编辑作品集资料</h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">选择技能标签、填写作品链接后，客户在作品集页可以更快筛到你。</p>
+            <div className="mt-5">
+              <FreelancerProfileEditor
+                initialProfile={{
+                  title: profile?.title ?? "自由职业设计师",
+                  bio: profile?.bio ?? "我擅长将业务目标转化为清晰的产品界面和品牌视觉。",
+                  skills: profileSkills,
+                  hourlyRate: profile?.hourlyRate ?? 0,
+                  portfolioUrls
+                }}
+              />
             </div>
           </Card>
           <Card>

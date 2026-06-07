@@ -10,6 +10,16 @@ import { Input, Textarea } from "@/components/ui/input";
 import type { Project } from "@/components/project-search";
 
 const suggestedSkills = ["产品设计", "UI 设计", "品牌视觉", "设计系统", "Figma", "数据可视化", "运营视觉", "用户研究"];
+const categories = ["品牌设计", "UI/UX 设计", "运营视觉", "产品设计", "插画/视觉", "设计系统"];
+
+const deliverablesByCategory: Record<string, string[]> = {
+  品牌设计: ["品牌视觉方向", "Logo/字标优化", "品牌色彩与字体", "官网首页视觉", "品牌使用规范"],
+  "UI/UX 设计": ["用户流程图", "低保真原型", "高保真界面", "移动端适配", "交互说明", "组件说明"],
+  运营视觉: ["活动主视觉 KV", "落地页设计", "社媒投放图", "商品模块", "可复用版式"],
+  产品设计: ["需求梳理", "信息架构", "核心流程原型", "高保真界面", "设计走查"],
+  "插画/视觉": ["视觉风格探索", "主视觉插画", "图标/贴纸", "分场景延展", "源文件"],
+  设计系统: ["组件库", "设计 Token", "页面模板", "状态规范", "交付标注"]
+};
 
 const briefTemplates = [
   {
@@ -44,8 +54,6 @@ const briefTemplates = [
   }
 ];
 
-const deliverables = ["信息架构", "高保真界面", "移动端适配", "组件说明", "交付标注"];
-
 const referenceImages = [
   { name: "彩色后台参考图", url: "/showcase/color-dashboard.svg" },
   { name: "移动流程参考图", url: "/showcase/color-mobile-flow.svg" },
@@ -58,7 +66,15 @@ type ComposerImage = {
   name: string;
 };
 
-export function ProjectBriefComposer({ onPublish }: { onPublish: (project: Project) => void }) {
+export function ProjectBriefComposer({
+  canPublish,
+  onPublish,
+  userRole
+}: {
+  canPublish: boolean;
+  onPublish: (project: Project) => void;
+  userRole: "client" | "freelancer" | "admin" | null;
+}) {
   const router = useRouter();
   const [title, setTitle] = useState("新消费品牌官网视觉升级");
   const [description, setDescription] = useState(
@@ -72,8 +88,10 @@ export function ProjectBriefComposer({ onPublish }: { onPublish: (project: Proje
   const [images, setImages] = useState<ComposerImage[]>([]);
   const [publishedMessage, setPublishedMessage] = useState("");
   const [publishedProjectId, setPublishedProjectId] = useState("");
-  const [selectedDeliverables, setSelectedDeliverables] = useState(["高保真界面", "移动端适配", "组件说明"]);
+  const [selectedDeliverables, setSelectedDeliverables] = useState(deliverablesByCategory["品牌设计"].slice(0, 3));
+  const [customDeliverable, setCustomDeliverable] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const deliverables = deliverablesByCategory[category] ?? deliverablesByCategory["UI/UX 设计"];
 
   const scoreItems = [
     { label: "标题明确", done: title.trim().length >= 5 },
@@ -101,8 +119,23 @@ export function ProjectBriefComposer({ onPublish }: { onPublish: (project: Proje
     setSkills(template.skills);
     setBudgetMin(template.budgetMin);
     setBudgetMax(template.budgetMax);
+    setSelectedDeliverables((deliverablesByCategory[template.category] ?? deliverablesByCategory["UI/UX 设计"]).slice(0, 3));
+    setCustomDeliverable("");
     setPublishedMessage("");
     setPublishedProjectId("");
+  }
+
+  function changeCategory(nextCategory: string) {
+    setCategory(nextCategory);
+    setSelectedDeliverables((deliverablesByCategory[nextCategory] ?? deliverablesByCategory["UI/UX 设计"]).slice(0, 3));
+    setCustomDeliverable("");
+  }
+
+  function addCustomDeliverable() {
+    const value = customDeliverable.trim();
+    if (!value) return;
+    setSelectedDeliverables((current) => (current.includes(value) ? current : [...current, value]));
+    setCustomDeliverable("");
   }
 
   async function handleImages(files: FileList | null) {
@@ -142,6 +175,12 @@ export function ProjectBriefComposer({ onPublish }: { onPublish: (project: Proje
   }
 
   async function publishProject() {
+    if (!canPublish) {
+      setPublishedMessage(userRole === "freelancer" ? "自由职业者账号不能发布需求，请切换客户账号。" : "请先登录客户账号再发布需求。");
+      setPublishedProjectId("");
+      return;
+    }
+
     const trimmedTitle = title.trim();
     const trimmedDescription = description.trim();
 
@@ -159,6 +198,7 @@ export function ProjectBriefComposer({ onPublish }: { onPublish: (project: Proje
       budgetMin: Number(budgetMin) || 1,
       budgetMax: Number(budgetMax) || Number(budgetMin) || 1,
       skillsRequired: skills,
+      expectedDeliverables: selectedDeliverables,
       imageUrls: images.map((image) => image.url),
       deadline,
       status: "published",
@@ -176,6 +216,7 @@ export function ProjectBriefComposer({ onPublish }: { onPublish: (project: Proje
         budgetMin: draftProject.budgetMin,
         budgetMax: draftProject.budgetMax,
         skillsRequired: draftProject.skillsRequired,
+        expectedDeliverables: draftProject.expectedDeliverables,
         imageUrls: draftProject.imageUrls,
         deadline: draftProject.deadline
       })
@@ -191,7 +232,7 @@ export function ProjectBriefComposer({ onPublish }: { onPublish: (project: Proje
     }
 
     const result = (await response.json().catch(() => null)) as { error?: { message?: string } } | null;
-    setPublishedMessage(result?.error?.message ?? "发布失败。请确认你已用客户账号登录，并已配置数据库。");
+    setPublishedMessage(result?.error?.message ?? "发布失败。请确认你已用客户账号登录，且预算、日期、交付物填写完整。");
     setPublishedProjectId("");
   }
 
@@ -268,7 +309,17 @@ export function ProjectBriefComposer({ onPublish }: { onPublish: (project: Proje
           </div>
           <div className="grid gap-3 md:grid-cols-2">
             <Input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="项目标题" />
-            <Input value={category} onChange={(event) => setCategory(event.target.value)} placeholder="设计分类" />
+            <select
+              className="h-11 w-full rounded-lg border border-[color-mix(in_srgb,var(--ink)_22%,var(--border))] bg-[var(--card)] px-3 text-sm outline-none focus:border-[var(--accent)]"
+              value={category}
+              onChange={(event) => changeCategory(event.target.value)}
+            >
+              {categories.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
           </div>
           <Textarea
             value={description}
@@ -320,6 +371,16 @@ export function ProjectBriefComposer({ onPublish }: { onPublish: (project: Proje
                   {selectedDeliverables.includes(item) ? <Check size={15} /> : null}
                 </button>
               ))}
+            </div>
+            <div className="mt-3 flex gap-2">
+              <Input value={customDeliverable} onChange={(event) => setCustomDeliverable(event.target.value)} placeholder="自定义交付物，例如：三套首页方案" />
+              <button
+                className="h-11 shrink-0 rounded border border-[var(--border)] px-4 text-sm text-[var(--foreground)] transition-colors hover:border-[var(--muted)] hover:bg-[var(--accent-3)]"
+                type="button"
+                onClick={addCustomDeliverable}
+              >
+                添加
+              </button>
             </div>
           </div>
 

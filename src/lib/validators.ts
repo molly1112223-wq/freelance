@@ -24,8 +24,12 @@ export const projectSchema = z.object({
   budgetMin: z.coerce.number().int().positive(),
   budgetMax: z.coerce.number().int().positive(),
   skillsRequired: z.array(z.string().min(1)).min(1),
+  expectedDeliverables: z.array(z.string().min(1)).default([]),
   imageUrls: z.array(z.string().min(1)).default([]),
   deadline: z.coerce.date()
+}).refine((input) => input.budgetMax >= input.budgetMin, {
+  message: "最高预算不能低于最低预算",
+  path: ["budgetMax"]
 });
 
 export const proposalSchema = z.object({
@@ -44,4 +48,12 @@ export const reviewSchema = z.object({
   revieweeId: z.string().min(1),
   rating: z.coerce.number().int().min(1).max(5),
   comment: z.string().min(5)
+});
+
+export const freelancerProfileSchema = z.object({
+  title: z.string().trim().min(2).max(40),
+  bio: z.string().trim().min(10).max(300),
+  skills: z.array(z.string().trim().min(1)).min(1).max(12),
+  hourlyRate: z.coerce.number().int().min(0).max(100000).optional(),
+  portfolioUrls: z.array(z.string().url()).max(6).default([])
 });

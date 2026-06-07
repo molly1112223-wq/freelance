@@ -8,6 +8,7 @@ type ProjectLike = {
   budgetMin: number;
   budgetMax: number;
   skillsRequired: unknown;
+  expectedDeliverables?: unknown;
   imageUrls?: unknown;
   deadline: Date | string;
   status: string;
@@ -31,6 +32,7 @@ export function toProject(item: ProjectLike): Project {
     budgetMin: item.budgetMin,
     budgetMax: item.budgetMax,
     skillsRequired: stringArray(item.skillsRequired),
+    expectedDeliverables: stringArray(item.expectedDeliverables),
     imageUrls: stringArray(item.imageUrls),
     deadline: item.deadline instanceof Date ? item.deadline.toISOString() : item.deadline,
     status: item.status,

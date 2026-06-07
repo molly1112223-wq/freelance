@@ -25,7 +25,7 @@ export async function POST(request: Request) {
                 create: {
                   title: "自由职业者",
                   bio: "新入驻的职链自由职业者",
-                  skills: [],
+                  skills: ["Figma", "UI 设计", "品牌视觉"],
                   portfolioUrls: []
                 }
               }

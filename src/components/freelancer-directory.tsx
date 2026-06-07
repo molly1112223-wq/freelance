@@ -18,10 +18,15 @@ type Freelancer = {
   ratingAvg: number;
 };
 
+const fallbackSkills = ["Figma", "UI 设计", "品牌视觉", "产品设计", "设计系统", "运营视觉", "数据可视化"];
+
 export function FreelancerDirectory({ freelancers }: { freelancers: Freelancer[] }) {
   const [query, setQuery] = useState("");
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
-  const skills = useMemo(() => Array.from(new Set(freelancers.flatMap((freelancer) => freelancer.skills))), [freelancers]);
+  const skills = useMemo(() => {
+    const fromProfiles = Array.from(new Set(freelancers.flatMap((freelancer) => freelancer.skills)));
+    return fromProfiles.length ? fromProfiles : fallbackSkills;
+  }, [freelancers]);
   const normalizedQuery = query.trim().toLowerCase();
 
   const filteredFreelancers = freelancers.filter((freelancer) => {
@@ -40,8 +45,8 @@ export function FreelancerDirectory({ freelancers }: { freelancers: Freelancer[]
       <div className="surface-slab p-6 md:p-8">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
-            <h1 className="text-4xl font-semibold">设计师</h1>
-            <p className="mt-3 text-[var(--muted)]">点选技能标签，快速添加到筛选列表。</p>
+            <h1 className="text-4xl font-semibold">作品集</h1>
+            <p className="mt-3 text-[var(--muted)]">浏览自由职业者案例与技能标签，点选标签即可筛选匹配人才。</p>
           </div>
           <div className="flex gap-2">
             <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索设计师、技能或服务" className="w-full md:w-72" />
@@ -121,9 +126,9 @@ export function FreelancerDirectory({ freelancers }: { freelancers: Freelancer[]
             <div className="mx-auto grid size-14 place-items-center rounded-lg bg-[var(--accent-3)] text-[var(--accent)]">
               <Search size={22} />
             </div>
-            <h2 className="mt-5 text-xl font-semibold">没有找到匹配设计师</h2>
+            <h2 className="mt-5 text-xl font-semibold">没有找到匹配作品集</h2>
             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--muted)]">
-              当前还没有匹配的自由职业者。可以减少技能标签，或等待更多用户入驻。
+              可以减少技能标签，或邀请自由职业者先到工作台完善作品集资料。
             </p>
           </Card>
         )}
