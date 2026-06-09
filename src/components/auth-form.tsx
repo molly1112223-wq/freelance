@@ -13,16 +13,61 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
   const [role, setRole] = useState("client");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+
+  function startCountdown() {
+    setCountdown(60);
+    const timer = window.setInterval(() => {
+      setCountdown((current) => {
+        if (current <= 1) {
+          window.clearInterval(timer);
+          return 0;
+        }
+        return current - 1;
+      });
+    }, 1000);
+  }
+
+  async function sendCode() {
+    setMessage("");
+    if (!/^(\+?86)?1[3-9]\d{9}$/.test(phone.trim())) {
+      setMessage("请先输入有效的手机号。");
+      return;
+    }
+
+    setIsSending(true);
+    const response = await fetch("/api/auth/send-code", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone, purpose: mode })
+    });
+    const result = (await response.json()) as { data?: { code?: string; message?: string }; error?: { message?: string } };
+    setIsSending(false);
+
+    if (!response.ok) {
+      setMessage(result.error?.message ?? "验证码发送失败，请稍后重试。");
+      return;
+    }
+
+    if (result.data?.code) {
+      setCode(result.data.code);
+      setMessage(`测试验证码：${result.data.code}`);
+    } else {
+      setMessage(result.data?.message ?? "验证码已发送。");
+    }
+    startCountdown();
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage("");
     setIsLoading(true);
 
-    const payload = mode === "login" ? { phone, password } : { role, name, phone, password };
+    const payload = mode === "login" ? { phone, code } : { role, name, phone, code };
     const response = await fetch(`/api/auth/${mode}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -67,7 +112,25 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
         type="tel"
         value={phone}
       />
-      <Input name="password" minLength={mode === "register" ? 8 : 1} onChange={(event) => setPassword(event.target.value)} placeholder="密码" required type="password" value={password} />
+      <div className="flex gap-2">
+        <Input
+          autoComplete="one-time-code"
+          inputMode="numeric"
+          name="code"
+          onChange={(event) => setCode(event.target.value)}
+          placeholder="短信验证码"
+          required
+          value={code}
+        />
+        <button
+          className="h-11 shrink-0 rounded border border-[var(--border)] px-4 text-sm text-[var(--ink)] transition-colors hover:border-[var(--muted)] hover:bg-[var(--accent-3)] disabled:cursor-not-allowed disabled:opacity-60"
+          disabled={isSending || countdown > 0}
+          type="button"
+          onClick={sendCode}
+        >
+          {isSending ? "发送中" : countdown > 0 ? `${countdown}s` : "获取验证码"}
+        </button>
+      </div>
       {message ? <p className="text-sm text-[var(--muted)]">{message}</p> : null}
       <Button className="w-full" disabled={isLoading} type="submit">
         {isLoading ? "处理中..." : mode === "login" ? "登录" : "创建账号"}

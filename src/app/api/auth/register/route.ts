@@ -1,7 +1,9 @@
 import { created, fail, handleApiError } from "@/lib/api";
 import { createSession, hashPassword, setSessionCookie } from "@/lib/auth";
+import { consumePhoneVerificationCode } from "@/lib/phone-verification";
 import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validators";
+import { randomUUID } from "crypto";
 
 export async function POST(request: Request) {
   try {
@@ -12,13 +14,15 @@ export async function POST(request: Request) {
       return fail("该手机号已注册", 409);
     }
 
+    await consumePhoneVerificationCode(input.phone, "register", input.code);
+
     const user = await prisma.user.create({
       data: {
         role: input.role,
         name: input.name,
         email: `phone-${input.phone}@users.spacex1.cn`,
         phone: input.phone,
-        passwordHash: await hashPassword(input.password),
+        passwordHash: await hashPassword(randomUUID()),
         freelancerProfile:
           input.role === "freelancer"
             ? {

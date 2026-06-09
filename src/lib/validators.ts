@@ -9,12 +9,17 @@ export const registerSchema = z.object({
   role: z.enum(["client", "freelancer"]),
   name: z.string().min(2),
   phone: phoneSchema,
-  password: z.string().min(8)
+  code: z.string().trim().regex(/^\d{4,8}$/, "请输入短信验证码")
 });
 
 export const loginSchema = z.object({
-  phone: phoneSchema.or(z.string().email()),
-  password: z.string().min(1)
+  phone: phoneSchema,
+  code: z.string().trim().regex(/^\d{4,8}$/, "请输入短信验证码")
+});
+
+export const sendSmsCodeSchema = z.object({
+  phone: phoneSchema,
+  purpose: z.enum(["login", "register"])
 });
 
 export const projectSchema = z.object({

@@ -1,17 +1,17 @@
 import { fail, handleApiError, ok } from "@/lib/api";
-import { createSession, setSessionCookie, verifyPassword } from "@/lib/auth";
+import { createSession, setSessionCookie } from "@/lib/auth";
+import { consumePhoneVerificationCode } from "@/lib/phone-verification";
 import { prisma } from "@/lib/prisma";
 import { loginSchema } from "@/lib/validators";
 
 export async function POST(request: Request) {
   try {
     const input = loginSchema.parse(await request.json());
-    const user = await prisma.user.findFirst({
-      where: input.phone.includes("@") ? { email: input.phone } : { phone: input.phone }
-    });
+    await consumePhoneVerificationCode(input.phone, "login", input.code);
+    const user = await prisma.user.findUnique({ where: { phone: input.phone } });
 
-    if (!user || !(await verifyPassword(input.password, user.passwordHash))) {
-      return fail("手机号或密码错误", 401);
+    if (!user) {
+      return fail("该手机号尚未注册，请先创建账号。", 404);
     }
 
     await setSessionCookie(await createSession(user.id));
