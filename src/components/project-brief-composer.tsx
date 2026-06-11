@@ -90,6 +90,7 @@ export function ProjectBriefComposer({
   const [publishedProjectId, setPublishedProjectId] = useState("");
   const [selectedDeliverables, setSelectedDeliverables] = useState(deliverablesByCategory["品牌设计"].slice(0, 3));
   const [customDeliverable, setCustomDeliverable] = useState("");
+  const [aiIdea, setAiIdea] = useState("我想做一个更高级的新消费品牌官网，需要能展示产品、品牌故事和购买入口");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const deliverables = deliverablesByCategory[category] ?? deliverablesByCategory["UI/UX 设计"];
 
@@ -122,6 +123,27 @@ export function ProjectBriefComposer({
     setSelectedDeliverables((deliverablesByCategory[template.category] ?? deliverablesByCategory["UI/UX 设计"]).slice(0, 3));
     setCustomDeliverable("");
     setPublishedMessage("");
+    setPublishedProjectId("");
+  }
+
+  function organizeWithAi() {
+    const idea = aiIdea.trim();
+    if (!idea) return;
+    const isApp = /小程序|APP|应用|系统|后台|SaaS|saas/i.test(idea);
+    const isCampaign = /活动|投放|海报|运营|小红书|内容/i.test(idea);
+    const nextCategory = isApp ? "UI/UX 设计" : isCampaign ? "运营视觉" : "品牌设计";
+    const nextSkills = isApp ? ["UI 设计", "Figma", "设计系统"] : isCampaign ? ["运营视觉", "品牌视觉", "Figma"] : ["品牌视觉", "UI 设计", "Figma"];
+
+    setCategory(nextCategory);
+    setTitle(isApp ? "产品体验与界面设计优化" : isCampaign ? "品牌运营活动视觉设计" : "品牌官网与视觉体验升级");
+    setDescription(
+      `${idea}。希望自由职业者先帮助我们梳理目标用户、核心页面和视觉方向，再输出可落地的设计方案。需要包含风格参考、关键页面、移动端适配和后续执行建议，便于团队评审和开发交接。`
+    );
+    setSkills(nextSkills);
+    setBudgetMin(isApp ? "35000" : isCampaign ? "15000" : "30000");
+    setBudgetMax(isApp ? "80000" : isCampaign ? "38000" : "65000");
+    setSelectedDeliverables((deliverablesByCategory[nextCategory] ?? deliverablesByCategory["品牌设计"]).slice(0, 4));
+    setPublishedMessage("已根据你的想法整理成需求草稿。后续接入大模型 API 后，这里会变成真实智能生成。");
     setPublishedProjectId("");
   }
 
@@ -292,6 +314,22 @@ export function ProjectBriefComposer({
         </div>
 
         <div className="space-y-5 p-6 md:p-8">
+          <div className="rounded-lg border border-[color-mix(in_srgb,var(--accent)_22%,var(--border))] bg-[color-mix(in_srgb,var(--accent-4)_54%,var(--card))] p-4">
+            <div className="mb-3 flex items-center gap-2 text-sm font-medium">
+              <Sparkles size={16} />
+              AI 整理想法
+            </div>
+            <div className="grid gap-2 md:grid-cols-[1fr_auto]">
+              <Input value={aiIdea} onChange={(event) => setAiIdea(event.target.value)} placeholder="用一句话说你的想法" />
+              <button
+                className="h-11 rounded bg-[var(--button-bg)] px-4 text-sm text-[var(--button-text)] transition-colors hover:bg-[var(--button-bg-hover)]"
+                type="button"
+                onClick={organizeWithAi}
+              >
+                智能整理
+              </button>
+            </div>
+          </div>
           <div>
             <p className="mb-3 text-sm font-medium">一键模板</p>
             <div className="flex flex-wrap gap-2">

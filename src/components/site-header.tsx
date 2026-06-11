@@ -8,9 +8,10 @@ import { useEffect, useState } from "react";
 import { ButtonLink } from "@/components/ui/button";
 
 const nav = [
+  { href: "/inspiration", label: "灵感" },
   { href: "/projects", label: "需求广场" },
   { href: "/freelancers", label: "作品集" },
-  { href: "/#how", label: "如何运作" }
+  { href: "/#how", label: "AI 助手" }
 ];
 
 type SessionUser = {

@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Bot, Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
@@ -40,8 +40,12 @@ export function ProjectSearch({ initialQuery = "", projects }: { initialQuery?: 
       <div className="surface-slab p-6 md:p-8">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-3 py-1 text-sm text-[var(--accent)]">
+              <Sparkles size={15} />
+              Opportunity Feed
+            </div>
             <h1 className="text-4xl font-semibold">需求广场</h1>
-            <p className="mt-3 text-[var(--muted)]">当前开放 {projects.length} 个需求，先浏览机会，再决定是否发布新需求。</p>
+            <p className="mt-3 max-w-2xl text-[var(--muted)]">当前开放 {projects.length} 个需求。先像浏览灵感一样查看机会，再用 AI 辅助把自己的想法整理成可执行 brief。</p>
           </div>
           <form className="flex gap-2" onSubmit={(event) => event.preventDefault()}>
             <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索项目、技能或行业" className="w-full md:w-72" />
@@ -72,8 +76,15 @@ export function ProjectSearch({ initialQuery = "", projects }: { initialQuery?: 
             已匹配 {filteredProjects.length} 个设计需求
           </div>
         </div>
-        <div className="mt-5">
-          <a className="inline-flex h-10 items-center justify-center rounded border border-[var(--border)] px-4 text-sm text-[var(--foreground)] transition-colors hover:border-[var(--muted)] hover:bg-[var(--accent-3)]" href="#publish">
+        <div className="mt-6 grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div className="rounded-lg border border-[color-mix(in_srgb,var(--accent)_22%,var(--border))] bg-[color-mix(in_srgb,var(--accent-4)_52%,var(--card))] p-4 text-sm leading-6 text-[var(--ink-2)]">
+            <span className="inline-flex items-center gap-2 font-medium text-[var(--foreground)]">
+              <Bot size={16} />
+              AI 辅助匹配即将接入
+            </span>
+            <span className="ml-2">后续可根据预算、技能、交付物自动推荐适合人才，并帮自由职业者生成投递建议。</span>
+          </div>
+          <a className="inline-flex h-11 items-center justify-center rounded border border-[var(--border)] px-4 text-sm text-[var(--foreground)] transition-colors hover:border-[var(--muted)] hover:bg-[var(--accent-3)]" href="#publish">
             发布新的设计需求
           </a>
         </div>

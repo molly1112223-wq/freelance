@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Star, X } from "lucide-react";
+import { Images, Search, Star, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
@@ -45,8 +45,12 @@ export function FreelancerDirectory({ freelancers }: { freelancers: Freelancer[]
       <div className="surface-slab p-6 md:p-8">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-3 py-1 text-sm text-[var(--accent)]">
+              <Images size={15} />
+              Portfolio Discovery
+            </div>
             <h1 className="text-4xl font-semibold">作品集</h1>
-            <p className="mt-3 text-[var(--muted)]">浏览自由职业者案例与技能标签，点选标签即可筛选匹配人才。</p>
+            <p className="mt-3 max-w-2xl text-[var(--muted)]">像逛作品社区一样发现人才。先看风格、案例和技能，再进入资料页沟通合作。</p>
           </div>
           <div className="flex gap-2">
             <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索设计师、技能或服务" className="w-full md:w-72" />

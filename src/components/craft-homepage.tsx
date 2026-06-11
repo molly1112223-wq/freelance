@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { inspirationItems } from "@/lib/inspiration-data";
 import { cn } from "@/lib/utils";
 
 const tickerItems = ["品牌设计", "全栈开发", "内容策划", "产品摄影", "UI / UX 设计", "短视频剪辑", "小程序开发", "品牌文案", "数据分析", "插画设计"];
@@ -197,9 +198,10 @@ export function CraftHomepage({ className }: { className?: string }) {
       <nav id="craftNav" className="craft-nav">
         <Link href="/" className="nav-logo">Craft</Link>
         <ul className="nav-links">
+          <li><Link href="/inspiration">灵感</Link></li>
           <li><Link href="/projects">需求广场</Link></li>
           <li><Link href="/freelancers">作品集</Link></li>
-          <li><a href="#how">如何运作</a></li>
+          <li><a href="#how">AI 助手</a></li>
         </ul>
         <div className="nav-actions">
           <Link href="/login" className="btn btn-ghost">登录</Link>
@@ -209,14 +211,14 @@ export function CraftHomepage({ className }: { className?: string }) {
 
       <section className="hero">
         <div className="hero-left">
-          <div className="hero-eyebrow">已通过实名认证</div>
-          <h1 className="hero-title">找到真正<br />合适的<em>人</em><br />来完成它</h1>
-          <p className="hero-desc">连接经过认证的专业自由职业者与真实需求方。从设计到开发，从文案到运营，每一笔交易都有保障。</p>
+          <div className="hero-eyebrow">灵感 · 需求 · 人才匹配</div>
+          <h1 className="hero-title">先找到灵感，<br />再找到合适的<em>人</em><br />把它做出来</h1>
+          <p className="hero-desc">Craft 让设计师和需求方先从案例、趋势与作品里获得启发，再把想法整理成可执行的 brief，匹配合适的自由职业者完成交付。</p>
           <div className="hero-cta">
-            <Link href="/projects" className="btn btn-primary btn-hero">发布需求</Link>
-            <Link href="/freelancers" className="btn btn-outline btn-hero">浏览人才</Link>
+            <Link href="/inspiration" className="btn btn-primary btn-hero">刷灵感</Link>
+            <Link href="/projects#publish" className="btn btn-outline btn-hero">整理需求</Link>
           </div>
-          <p className="hero-note">注册免费 · 认证后即可使用全部功能</p>
+          <p className="hero-note">注册免费 · 支持短信登录 · 认证后即可交易</p>
         </div>
 
         <div className="hero-right">
@@ -240,13 +242,42 @@ export function CraftHomepage({ className }: { className?: string }) {
         </div>
       </div>
 
+      <section className="home-inspiration">
+        <div className="talent-header reveal">
+          <div>
+            <div className="section-label visible">发现灵感</div>
+            <h2 className="talent-title">让用户愿意停留、浏览、收藏，再开始一个真实项目。</h2>
+          </div>
+          <Link href="/inspiration" className="btn btn-outline">进入灵感广场</Link>
+        </div>
+        <div className="home-inspiration-grid">
+          {inspirationItems.slice(0, 3).map((item, index) => (
+            <Link className={`home-inspiration-card reveal reveal-delay-${index + 1}`} href={`/projects?q=${encodeURIComponent(item.category)}`} key={item.id}>
+              <div className="home-inspiration-art" style={{ backgroundImage: `url("${item.image}")` }} />
+              <div className="home-inspiration-body">
+                <span>{item.category}</span>
+                <h3>{item.title}</h3>
+                <p>{item.subtitle}</p>
+                <div>
+                  {item.tags.slice(0, 2).map((tag) => (
+                    <em key={tag}>{tag}</em>
+                  ))}
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <hr className="section-divider" />
+
       <section id="how" className="how">
-        <div className="section-label reveal">运作方式</div>
+        <div className="section-label reveal">AI 辅助执行</div>
         <div className="steps">
           {[
-            ["01", "认证，建立信任", "甲乙双方均需完成实名认证。我们审核每一位用户，确保平台上的每笔交易都真实可信。"],
-            ["02", "发布或投递", "需求方描述项目、设定预算；乙方展示作品集、投递意向。双方直接沟通，高效匹配。"],
-            ["03", "托管付款，安心交付", "资金由平台托管。项目验收后自动放款，全程有保障，杜绝跑单和拖款。"]
+            ["01", "从灵感生成 brief", "用户看到喜欢的案例后，可以把一句想法整理成项目标题、预算、技能和交付物，降低发布门槛。"],
+            ["02", "辅助判断匹配度", "自由职业者打开需求时，系统可以提示适配技能、风险点和报价建议，帮助更快决定是否投递。"],
+            ["03", "交易闭环继续保留", "认证、投递、合同、交付、验收和评价仍然完整存在，让灵感最终能变成真实交付。"]
           ].map(([num, title, desc], index) => (
             <div className={`step reveal reveal-delay-${index + 1}`} key={num}>
               <span className="step-num">{num}</span>
